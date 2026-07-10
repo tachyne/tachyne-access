@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: access
-          image: github.com/tachyne/tachyne-access:latest
+          image: ghcr.io/tachyne/tachyne-access:latest
           imagePullPolicy: Always
           env:
             - name: ACCESS_LISTEN
