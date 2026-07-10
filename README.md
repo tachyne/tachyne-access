@@ -4,6 +4,15 @@
 > Microsoft, or Minecraft's developer/publisher in any way. See the
 > Disclaimer at the bottom.
 
+## Project status
+
+**Work in progress.** tachyne is young and moving fast: a full survival game
+runs today, but expect rough edges, missing vanilla features, and breaking
+changes between updates. **Bug reports are genuinely useful** — please open a
+GitHub Issue with your client version/edition and what you saw. Contributions
+are welcome too: see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+
 
 Authorization + identity policy for the tachyne Minecraft cluster: whitelist,
 blacklist/bans, roles/permissions, a firewall-style IP ACL, principal
