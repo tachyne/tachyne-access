@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tachyne-access
+  namespace: tachyne
+  labels:
+    app.kubernetes.io/name: tachyne
+    app.kubernetes.io/component: access
+    app.kubernetes.io/part-of: tachyne
+spec:
+  replicas: 2 # HA: logins are fail-closed, so the policy service must not be a singleton
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tachyne
+      app.kubernetes.io/component: access
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tachyne
+        app.kubernetes.io/component: access
+        app.kubernetes.io/part-of: tachyne
+    spec:
+      containers:
+        - name: access
+          image: github.com/tachyne/tachyne-access:latest
+          imagePullPolicy: Always
+          env:
+            - name: ACCESS_LISTEN
+              value: ":8080"
+            - name: ACCESS_PG_HOST
+              value: pg-rw.databases.svc.cluster.local:5432
+            - name: ACCESS_PG_DB
+              value: tachyne
+            - name: ACCESS_PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: tachyne-access-pg-cred
+                  key: username
+            - name: ACCESS_PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tachyne-access-pg-cred
+                  key: password
+            - name: ACCESS_ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: tachyne-access-token
+                  key: token
+          ports:
+            - containerPort: 8080
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+      imagePullSecrets:
+        - name: forgejo-pull
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 10

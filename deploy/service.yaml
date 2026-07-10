@@ -1,0 +1,20 @@
+# Internal-only: gateways and world pods call this; nothing outside the
+# cluster needs it. Admin access via `kubectl port-forward svc/tachyne-access
+# -n tachyne 8080:8080`.
+apiVersion: v1
+kind: Service
+metadata:
+  name: tachyne-access
+  namespace: tachyne
+  labels:
+    app.kubernetes.io/name: tachyne
+    app.kubernetes.io/component: access
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: tachyne
+    app.kubernetes.io/component: access
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
